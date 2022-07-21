@@ -188,7 +188,7 @@ github.com/google/uuid
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
-# github.com/hashicorp/go-azure-helpers v0.25.0
+# github.com/hashicorp/go-azure-helpers v0.25.0 => github.com/obourdon/go-azure-helpers v0.21.1-0.20220723142659-4bc47a09b1b9
 ## explicit
 github.com/hashicorp/go-azure-helpers/authentication
 github.com/hashicorp/go-azure-helpers/lang/dates

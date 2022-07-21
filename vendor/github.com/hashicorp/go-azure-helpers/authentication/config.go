@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/manicminer/hamilton/auth"
 	"github.com/manicminer/hamilton/environments"
 )
@@ -42,7 +44,9 @@ type OAuthConfig struct {
 
 // GetAuthorizationToken returns an authorization token for the authentication method defined in the Config
 func (c Config) GetOAuthConfig(activeDirectoryEndpoint string) (*adal.OAuthConfig, error) {
-	log.Printf("Getting OAuth config for endpoint %s with  tenant %s", activeDirectoryEndpoint, c.TenantID)
+	ldir, _ := os.Getwd()
+	log.Printf("[INFO] 0LIVIER_1!")
+	log.Printf("Getting OAuth config for endpoint %s with tenant %s (PID=%d, DIR=%v) [%s,%s] OLIVIER1", activeDirectoryEndpoint, c.TenantID, os.Getpid(), ldir, activeDirectoryEndpoint, c.TenantID)
 
 	// fix for ADFS environments, if the login endpoint ends in `/adfs` it's an adfs environment
 	// the login endpoint ends up residing in `ActiveDirectoryEndpoint`
@@ -54,13 +58,17 @@ func (c Config) GetOAuthConfig(activeDirectoryEndpoint string) (*adal.OAuthConfi
 
 	oauth, err := adal.NewOAuthConfig(activeDirectoryEndpoint, oAuthTenant)
 	if err != nil {
+		log.Printf("ERROR 1 OLIVIER_1 getting OAuth config for endpoint %s with tenant %s (PID=%d, DIR=%v) [%s,%s]: %v", activeDirectoryEndpoint, c.TenantID, os.Getpid(), ldir, activeDirectoryEndpoint, c.TenantID, err)
 		return nil, err
 	}
 
+	log.Printf("Getting OAuth config returned without error OLIVIER_1")
 	// OAuthConfigForTenant returns a pointer, which can be nil.
 	if oauth == nil {
+		log.Printf("ERROR 2 OLIVIER1 getting OAuth config for endpoint %s with tenant %s (PID=%d, DIR=%v) [%s,%s]", activeDirectoryEndpoint, c.TenantID, os.Getpid(), ldir, activeDirectoryEndpoint, c.TenantID)
 		return nil, fmt.Errorf("unable to configure OAuthConfig for tenant %s", c.TenantID)
 	}
+	log.Printf("OLIVIER_1 OAuth got %s", spew.Sdump(oauth))
 
 	return oauth, nil
 }
@@ -104,6 +112,7 @@ func (c Config) BuildOAuthConfig(activeDirectoryEndpoint string) (*OAuthConfig, 
 // ADALBearerAuthorizerCallback returns a BearerAuthorizer valid only for the Primary Tenant
 // this signs a request using the AccessToken returned from the primary Resource Manager authorizer
 func (c Config) ADALBearerAuthorizerCallback(ctx context.Context, sender autorest.Sender, oauthConfig *OAuthConfig) *autorest.BearerAuthorizerCallback {
+	log.Printf("OLIVIER_1 ADALBearerAuthorizerCallback")
 	return autorest.NewBearerAuthorizerCallback(sender, func(tenantID, resource string) (*autorest.BearerAuthorizer, error) {
 		// a BearerAuthorizer is only valid for the primary tenant
 		newAuthConfig := &OAuthConfig{
@@ -127,6 +136,7 @@ func (c Config) ADALBearerAuthorizerCallback(ctx context.Context, sender autores
 // MSALBearerAuthorizerCallback returns a BearerAuthorizer valid only for the Primary Tenant
 // this signs a request using the AccessToken returned from the primary Resource Manager authorizer
 func (c Config) MSALBearerAuthorizerCallback(ctx context.Context, api environments.Api, sender autorest.Sender, oauthConfig *OAuthConfig, endpoint string) *autorest.BearerAuthorizerCallback {
+	log.Printf("OLIVIER_1 MSALBearerAuthorizerCallback")
 	authorizer, err := c.GetMSALToken(ctx, api, sender, oauthConfig, endpoint)
 	if err != nil {
 		return autorest.NewBearerAuthorizerCallback(nil, func(_, _ string) (*autorest.BearerAuthorizer, error) {
@@ -146,10 +156,14 @@ func (c Config) MSALBearerAuthorizerCallback(ctx context.Context, api environmen
 
 // GetADALToken returns an autorest.Authorizer using an ADAL token via the authentication method defined in the Config
 func (c Config) GetADALToken(ctx context.Context, sender autorest.Sender, oauth *OAuthConfig, endpoint string) (autorest.Authorizer, error) {
-	return c.authMethod.getADALToken(ctx, sender, oauth, endpoint)
+	log.Printf("OLIVIER_1 GetADALToken Sender=%s Endpoint=%v", spew.Sdump(sender), endpoint)
+	ret, err := c.authMethod.getADALToken(ctx, sender, oauth, endpoint)
+	log.Printf("OLIVIER_1 GetADALToken AuthRet=%s Error=%v", spew.Sdump(ret), err)
+	return ret, err
 }
 
 // GetMSALToken returns an autorest.Authorizer using an MSAL token via the authentication method defined in the Config
 func (c Config) GetMSALToken(ctx context.Context, api environments.Api, sender autorest.Sender, oauth *OAuthConfig, endpoint string) (autorest.Authorizer, error) {
+	log.Printf("OLIVIER_1 GetMSALToken")
 	return c.authMethod.getMSALToken(ctx, api, sender, oauth, endpoint)
 }
